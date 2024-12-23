@@ -1,5 +1,5 @@
 steps:
-- ${{ if and(eq(variables['System.CollectionUri'], 'https://dev.azure.com/eHealthCloud/'), eq(variables['System.TeamProject'], 'LZ-Azure'), eq(resources.repositories['self'].name, 'policies'), or(eq(variables['System.DefinitionId'], '84'), eq(variables['System.DefinitionId'], '85'), eq(variables['System.DefinitionId'], '86')), startsWith(variables['Build.SourceBranch'], 'refs/tags/')) }}:
+- ${{ if and(eq(variables['System.CollectionUri'], 'https://dev.azure.com/contoso/'), eq(variables['System.TeamProject'], 'MyProject'), eq(resources.repositories['self'].name, 'policies'), or(eq(variables['System.DefinitionId'], '84'), eq(variables['System.DefinitionId'], '85'), eq(variables['System.DefinitionId'], '86')), startsWith(variables['Build.SourceBranch'], 'refs/tags/')) }}:
   - task: PowerShell@2
     displayName: "Git Tag Validation (Injected)"
     env:
