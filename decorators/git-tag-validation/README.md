@@ -1,5 +1,11 @@
 # Git Tag Validation Azure Pipeline Decorator
 
+## Introduction
+
+Git Tag validation decorator to ensure the tag commit Id exists in the commit history of the default branch.
+
+More information ca be found from my blog post: [Git Tag Validation Using Azure DevOps Pipeline Decorator](https://blog.tyang.org/2024/12/23/git-tag-validation-using-ado-pipeline-decorator).
+
 ## Pre-requisite
 
 Prior to packaging and publishing the decorator extension, `NodeJS` and `NPM` must be installed on the local computer.
