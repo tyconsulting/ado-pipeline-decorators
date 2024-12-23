@@ -1,0 +1,38 @@
+{
+    "manifestVersion": 1,
+    "id": "gittagvalidation",
+    "name": "Git Tag Validation",
+    "version": "0.0.1",
+    "publisher": "<your-publisher-name>",
+    "targets": [
+        {
+            "id": "Microsoft.VisualStudio.Services"
+        }
+    ],
+    "description": "This decorator checks if the git tag used for the pipeline execution is created from the default branch or the commit Id is part of the default branch's git history.",
+    "categories": [
+        "Azure Pipelines"
+    ],
+    "icons": {
+        "default": "images/extension-icon.jpg"
+    },
+    "contributions": [
+        {
+            "id": "validate-git-tag",
+            "type": "ms.azure-pipelines.pipeline-decorator",
+            "targets": [
+                "ms.azure-pipelines-agent-job.post-checkout-tasks"
+            ],
+            "properties": {
+                "template": "task-check-git-tag.yml"
+            }
+        }
+    ],
+    "files": [
+        {
+            "path": "task-check-git-tag.yml",
+            "addressable": true,
+            "contentType": "text/plain"
+        }
+    ]
+}

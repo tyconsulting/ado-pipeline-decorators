@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "ms-vscode.powershell",
+    "ms-azure-devops.azure-pipelines",
+    "redhat.vscode-yaml",
+    "eamodio.gitlens",
+    "DavidAnson.vscode-markdownlint",
+    "bierner.markdown-mermaid",
+    "ms-azuretools.vscode-bicep",
+    "bewhite.psrule-vscode"
+  ]
+}
