@@ -1,0 +1,48 @@
+steps:
+- ${{ if and(eq(variables['System.CollectionUri'], 'https://dev.azure.com/contoso/'), eq(variables['System.TeamProject'], 'MyProject'), eq(resources.repositories['self'].name, 'policies'), or(eq(variables['System.DefinitionId'], '84'), eq(variables['System.DefinitionId'], '85'), eq(variables['System.DefinitionId'], '86')), startsWith(variables['Build.SourceBranch'], 'refs/tags/')) }}:
+  - task: PowerShell@2
+    displayName: "Git Tag Validation (Injected)"
+    env:
+      defaultBranchName: ${{ resources.repositories['self'].defaultBranch }}
+      maxGitFetchDept: 3000
+    inputs:
+      targetType: "inline"
+      pwsh: true
+      script: |
+        $maxGitFetchDept = $env:maxGitFetchDept
+        $defaultBranchFullName = $env:defaultBranchName
+        $defaultBranchNameMatch = $defaultBranchFullName -match '^refs/heads/(.*)$'
+        $defaultBranchName = $Matches[1]
+        Write-Verbose "Default branch: '$defaultBranchName'." -verbose
+
+        $tagName = git describe --tags --exact-match
+        $gitLatestCommitIdForTagCmd = "git rev-list -n 1 $tagName"
+        Write-Verbose "Get Git commit Id via command '$gitLatestCommitIdForTagCmd'" -verbose
+        $tagCommitId = invoke-expression $gitLatestCommitIdForTagCmd
+        Write-Verbose "Commit Id for tag '$tagName' is: '$tagCommitId'" -Verbose
+        $gitFetchFromDefaultBranchCmd = 'git fetch --depth $maxGitFetchDept origin $defaultBranchName'
+        Write-Verbose "Fetch the latest commits (up to $maxGitFetchDept) from default branch using command '$gitFetchFromDefaultBranchCmd'." -verbose
+        $fetchDefaultBranch = invoke-expression $gitFetchFromDefaultBranchCmd
+        $gitAllCommitIdsForDefaultBranchCmd = "git log refs/remotes/origin/$defaultBranchName --pretty=format:'%H'"
+        Write-Verbose "Get all Git commit Ids for the Default branch via command '$gitAllCommitIdsForDefaultBranchCmd'" -verbose
+        $defaultBranchCommitIds = invoke-expression $gitAllCommitIdsForDefaultBranchCmd -errorVariable errGetDefaultBranchCommitIds
+        if (!$defaultBranchCommitIds)
+        {
+          Write-Output "##vso[task.logissue type=error]Unable to get the commit Ids for the default branch '$defaultBranchName'. Make sure the pipeline has configured to checkout the Git repo with 'fetchDepth : 0' option, so the entire commit history is fetched. Reference: 'https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/steps-checkout?view=azure-pipelines#properties'."
+          Exit 1
+        } else {
+          Write-Verbose "Number of commits found in the default branch '$defaultBranchName': $($defaultBranchCommitIds.count)" -verbose
+          Foreach ($id in $defaultBranchCommitIds)
+          {
+            Write-Verbose " - $id" -verbose
+          }
+        }
+
+        #check if the last Tag commit Id is in the commit Ids of the default branch
+        if ($defaultBranchCommitIds -contains($tagCommitId))
+        {
+          Write-Output "Commit Id '$tagCommitId' found from the commit Ids of the default branch."
+        } else {
+          Write-Output "##vso[task.logissue type=error]Commit Id '$tagCommitId' not found from the default branch commit Ids of the default branch. This tag is not allowed to be used to run the pipeline. If you think this is incorrect, make sure the checkout task prior to this in the pipeline has configured to checkout the Git repo with 'fetchDepth : 0' option, so the entire commit history is fetched. Reference: 'https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/steps-checkout?view=azure-pipelines#properties'."
+          Exit 1
+        }
